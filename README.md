@@ -7,7 +7,7 @@ configuration.
 
 Add this line to your application's Gemfile:
 
-    gem 'asg-fleet'
+    gem 'aws-asg-fleet'
 
 And then execute:
 
