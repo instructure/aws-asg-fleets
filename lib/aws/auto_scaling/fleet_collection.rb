@@ -23,18 +23,9 @@ module AWS
       #
       def create name, template_group
         raise ArgumentError, "Fleet #{name} already exists" if self[name].exists?
+        raise ArgumentError, "Group is already in a fleet" if template_group.fleet
 
-        tags = template_group.tags
-        if tags.map(&:key).any? {|k| k =~ /^asgfleet:/ }
-          raise ArgumentError, "Group is already in a fleet"
-        end
-
-        template_group.update(:tags => [{
-          :key => "asgfleet:#{name}",
-          :value => "template",
-          :propagate_at_launch => false
-        }])
-
+        template_group.set_fleet(name, "template")
         self[name]
       end
 

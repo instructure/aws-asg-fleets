@@ -12,6 +12,12 @@ module AWS
       # @return [Fleet]
       attr_reader :fleet
 
+      # Add an existing group to a Fleet.
+      #
+      # @param [Group] The group to add.
+      def << group
+        group.set_fleet @fleet.name
+      end
 
       # Create a group within a Fleet.
       #
@@ -49,7 +55,7 @@ module AWS
         end
         if options[:tags]
           options[:tags].each do |tag|
-            existing_tag = new_tags.first {|t| t[:key] == tag[:key] }
+            existing_tag = new_tags.find {|t| t[:key] == tag[:key] }
             if existing_tag
               existing_tag.merge! tag
             else
@@ -58,7 +64,7 @@ module AWS
           end
         end
         # change the fleet tag value from "template" to "member"
-        fleet_tag = new_tags.first {|t| t[:key] == "asgfleet:#{@fleet.name}" }
+        fleet_tag = new_tags.find {|t| t[:key] == "asgfleet:#{@fleet.name}" }
         fleet_tag[:value] = "member"
         options[:tags] = new_tags
 
