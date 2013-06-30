@@ -70,6 +70,11 @@ module AWS
 
         group = GroupCollection.new(:config => config).create name, options
 
+        # Match metric collection with the template
+        # (If this call ever supports specifying a granularity of other than
+        # '1Minute', this will need to change.)
+        group.enable_metrics_collection(template_group.enabled_metrics.keys)
+
         ## Clone the scaling policies and alarms from the group
         cloudwatch = AWS::CloudWatch.new(:config => config)
         template_group.scaling_policies.each do |template_policy|
