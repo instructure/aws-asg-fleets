@@ -39,7 +39,7 @@ module AWS
         ## Clone the group
         template_group = @fleet.template_group
 
-        options = options_from(template_group,
+        options = Fleet.options_from(template_group,
           :load_balancers, :min_size, :max_size, :launch_configuration,
           :availability_zones, :default_cooldown, :desired_capacity,
           :health_check_grace_period, :health_check_type, :placement_group,
@@ -78,7 +78,7 @@ module AWS
         ## Clone the scaling policies and alarms from the group
         cloudwatch = AWS::CloudWatch.new(:config => config)
         template_group.scaling_policies.each do |template_policy|
-          policy_options = options_from(template_policy,
+          policy_options = Fleet.options_from(template_policy,
             :adjustment_type, :scaling_adjustment, :cooldown, :min_adjustment_step)
 
           policy = group.scaling_policies.create template_policy.name, policy_options
@@ -86,7 +86,7 @@ module AWS
           template_policy.alarms.keys.each do |template_alarm_name|
             template_alarm = cloudwatch.alarms[template_alarm_name]
             alarm_name = "#{template_alarm.name}-#{group.name}"
-            alarm_options = options_from(template_alarm,
+            alarm_options = Fleet.options_from(template_alarm,
               :namespace, :metric_name, :comparison_operator, :evaluation_periods,
               :period, :statistic, :threshold, :actions_enabled, :alarm_description,
               :unit)
@@ -133,17 +133,6 @@ module AWS
         TagCollection.new(:config => config).filter(:key, "asgfleet:#{@fleet.name}").each do |tag|
           yield tag.resource
         end
-      end
-
-      def options_from(obj, *attributes)
-        opts = {}
-        attributes.each do |key|
-          value = obj.send(key)
-          next if value.nil? || (value.respond_to?(:empty?) && value.empty?)
-          value = value.to_a if value.is_a? Array
-          opts[key] ||= value
-        end
-        opts
       end
     end
   end

@@ -59,16 +59,13 @@ module AWS
         old_lc = template_group.launch_configuration
         image_id = options[:image_id] || old_lc.image_id
         instance_type = options[:instance_type] || old_lc.instance_type
-        [ :block_device_mappings, :detailed_instance_monitoring, :kernel_id,
+
+        options = Fleet.options_from(old_lc,
+          :block_device_mappings, :detailed_instance_monitoring, :kernel_id,
           :key_pair, :ramdisk_id, :security_groups, :user_data,
-          :iam_instance_profile, :spot_price ].each do |k|
-          existing_value = old_lc.send(k)
-          next if existing_value == nil || existing_value == []
-          options[k] ||= existing_value
-        end
+          :iam_instance_profile, :spot_price).merge(options)
 
         launch_configurations = LaunchConfigurationCollection.new(:config => config)
-        puts options
         new_lc = launch_configurations.create(name, image_id, instance_type, options)
 
         groups.each do |group|
@@ -76,6 +73,24 @@ module AWS
         end
 
         new_lc
+      end
+
+      # @private
+      # Collects non-nil, non-empty-array attributes from the supplied object
+      # into a Hash. Also converts any Array-like objects into real
+      # Arrays.
+      def self.options_from(obj, *attributes)
+        opts = {}
+        attributes.each do |key|
+          value = obj.send(key)
+          next if value.nil?
+          if value.is_a? Array
+            value = value.to_a
+            next if value.empty?
+          end
+          opts[key] ||= value
+        end
+        opts
       end
 
       protected
