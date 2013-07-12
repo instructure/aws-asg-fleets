@@ -75,6 +75,14 @@ module AWS
         # '1Minute', this will need to change.)
         group.enable_metrics_collection(template_group.enabled_metrics.keys)
 
+        # Copy notification configurations
+        template_group.notification_configurations.each do |template_nc|
+          group.notification_configurations.create(
+            :topic => template_nc.topic_arn,
+            :types => template_nc.notification_types,
+          )
+        end
+
         ## Clone the scaling policies and alarms from the group
         cloudwatch = AWS::CloudWatch.new(:config => config)
         template_group.scaling_policies.each do |template_policy|
@@ -85,7 +93,15 @@ module AWS
 
           template_policy.alarms.keys.each do |template_alarm_name|
             template_alarm = cloudwatch.alarms[template_alarm_name]
-            alarm_name = "#{template_alarm.name}-#{group.name}"
+
+            # try to generate a unique alarm name first by replacing the name
+            # of the template group with the new group. if that doesn't work, then
+            # just append the new group's name
+            alarm_name = template_alarm.name.gsub(template_group.name, group.name)
+            if alarm_name == template_group.name
+              alarm_name = "#{alarm_name}-#{group.name}"
+            end
+
             alarm_options = Fleet.options_from(template_alarm,
               :namespace, :metric_name, :comparison_operator, :evaluation_periods,
               :period, :statistic, :threshold, :actions_enabled, :alarm_description,
@@ -120,7 +136,10 @@ module AWS
               end
             end
 
-            cloudwatch.alarms.create alarm_name, alarm_options
+            alarm = cloudwatch.alarms.create alarm_name, alarm_options
+            if !template_alarm.enabled?
+              alarm.disable
+            end
           end
         end
 
