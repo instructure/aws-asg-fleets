@@ -14,13 +14,6 @@ module AWS
     end
 
     class Group
-      # stupid hack to get an attribute added to Group. It'll be fixed in
-      # 1.11.4, so remove this and set 1.11.4 as the required version when
-      # released.
-      if AWS::VERSION == '1.11.3'
-        attribute :termination_policies
-      end
-
       def fleet
         fleet_tag = tags.find {|t| t[:key] =~ /^asgfleet:/ }
         return nil unless fleet_tag
