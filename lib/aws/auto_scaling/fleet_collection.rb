@@ -34,17 +34,6 @@ module AWS
       def [] name
         Fleet.new(name, :config => config)
       end
-
-      protected
-
-      def _each_item options
-        TagCollection.new(:config => config).filter(:value, "template").each do |tag|
-          if tag[:key] =~ /^asgfleet:/
-            name = tag[:key].split(':', 2)[1]
-            yield Fleet.new(name, :config => config)
-          end
-        end
-      end
     end
   end
 end

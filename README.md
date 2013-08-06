@@ -121,17 +121,6 @@ fleet.update_launch_configuration('new-launch-config',
 That will create a new launch configuration, and add it to all the
 groups, replacing the old one.
 
-Above, we showed how to add a group you've already created to the fleet.
-You can also create a group *based on the existing template group*. This
-method will create a new group using options you pass in, but any
-options you don't specify will be pulled from the template group. Policies
-and alarms also get duplicated for the new group:
-
-```ruby
-fleet.groups.create('yet-another-group',
-  :load_balancers => [ 'my-other-elb' ])
-```
-
 ## How It Works
 
 Fleets are identified using tags on Auto Scaling groups. When you create
