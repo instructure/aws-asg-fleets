@@ -34,6 +34,23 @@ module AWS
       def [] name
         Fleet.new(name, :config => config)
       end
+
+      protected
+
+      def _each_item options
+        yielded_fleets = []
+
+        TagCollection.new(:config => config).each do |tag|
+          if tag[:key] =~ /^asgfleet:/
+            name = tag[:key].split(':', 2)[1]
+
+            next if yielded_fleets.include? name
+            yielded_fleets << name
+
+            yield Fleet.new(name, :config => config)
+          end
+        end
+      end
     end
   end
 end

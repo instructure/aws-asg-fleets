@@ -18,6 +18,14 @@ module AWS
       def << group
         group.set_fleet @fleet.name
       end
+
+      protected
+
+      def _each_item options
+        TagCollection.new(:config => config).filter(:key, "asgfleet:#{@fleet.name}").each do |tag|
+          yield tag.resource
+        end
+      end
     end
   end
 end
