@@ -126,4 +126,6 @@ groups, replacing the old one.
 Fleets are identified using tags on Auto Scaling groups. When you create
 a new fleet 'my-fleet', it adds the tag key "asgfleet:my-fleet" with
 value "template". Other groups added to the fleet get tagged with key
-"asgfleet:my-fleet" and value "member".
+"asgfleet:my-fleet" and value "member". If you don't have a group tagged
+with "template" and attempt to perform a `update_launch_configuration`, it
+will use the first group tagged as a member instead.

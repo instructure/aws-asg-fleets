@@ -10,24 +10,43 @@ module AWS
       # @return [String]
       attr_reader :name
 
+      def tag_name
+        "asgfleet:#{name}"
+      end
+
       # @return [Group]
       def template_group
         tag = TagCollection.new(:config => config)
-          .filter(:key, "asgfleet:#{name}")
+          .filter(:key, tag_name)
           .filter(:value, "template")
           .first
+
         return nil unless tag
         tag.resource
       end
 
+      # @return [Group]
+      def any_group
+        tag = TagCollection.new(:config => config)
+          .filter(:key, tag_name)
+          .first
+
+        return nil unless tag
+        tag.resource
+      end
+
+      def template_or_any_group
+        template_group || any_group
+      end
+
       def exists?
-        !template_group.nil?
+        !any_group.nil?
       end
 
       def groups
         FleetGroupCollection.new(self)
       end
-      
+
       # Suspends all scaling processes in all Auto Scaling groups in the
       # fleet.
       def suspend_all_processes
@@ -56,7 +75,7 @@ module AWS
       #   existing launch configuration on the template scaling group.
       #
       def update_launch_configuration name, options = {}
-        old_lc = template_group.launch_configuration
+        old_lc = template_or_any_group.launch_configuration
         image_id = options[:image_id] || old_lc.image_id
         instance_type = options[:instance_type] || old_lc.instance_type
 
