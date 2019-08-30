@@ -108,6 +108,9 @@ module Aws::AutoScaling
       @client.create_launch_configuration(options)
 
       groups.each do |group|
+        next unless group.launch_template.nil?
+        next unless group.mixed_instances_policy.nil?
+
         group.update(:launch_configuration_name => name)
       end
 
