@@ -5,7 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "aws-asg-fleet"
-  spec.version       = "0.0.7"
+  spec.version       = "0.1.1"
   spec.authors       = ["Zach Wily"]
   spec.email         = ["zach@zwily.com"]
   spec.description   = %q{AWS Auto Scaling Fleets}
