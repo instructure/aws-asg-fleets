@@ -57,8 +57,15 @@ module Aws::AutoScaling
       group_for_tag(tags.first)
     end
 
+    def any_lc_group
+      tag_with_lc = tags.detect { |tag| !group_for_tag(tag).launch_configuration.nil? }
+      return nil if tag_with_lc.nil?
+
+      group_for_tag(tag_with_lc)
+    end
+
     def template_or_any_group
-      template_group || any_group
+      template_group || any_lc_group
     end
 
     def exists?
@@ -97,7 +104,10 @@ module Aws::AutoScaling
     #   existing launch configuration on the template scaling group.
     #
     def update_launch_configuration name, options = {}
-      old_lc = template_or_any_group.launch_configuration
+      old_lc = template_or_any_group&.launch_configuration
+      # There aren't any groups using lcs, so skip updating
+      return if old_lc.nil?
+
       options = Fleet.options_from(old_lc,
         :image_id, :instance_type,
         :block_device_mappings, :instance_monitoring, :kernel_id,
